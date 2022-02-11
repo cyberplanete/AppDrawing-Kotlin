@@ -11,13 +11,16 @@ import android.view.View
 class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     ///Hérite de customPath
-    private var mDrawPath: CustomPath? = null;
+    private var mDrawDessin: CustomPath? = null;
     private var mCanvasBitmap: Bitmap? = null
     private var mDrawPaint: Paint? = null
     private var mCanvasPaint: Paint? = null
     private var mPinceauTaille: Float = 0.toFloat()
     private var couleur = Color.BLACK
     private var canvas: Canvas? = null
+
+    ///Permettre l'enregistrement du dessin
+    private val mListeDeDessins = ArrayList<CustomPath>()
 
     init {
         setupDrawing()
@@ -30,7 +33,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         mDrawPaint!!.strokeJoin = Paint.Join.BEVEL
         mDrawPaint!!.strokeCap = Paint.Cap.SQUARE
 
-        mDrawPath = CustomPath(couleur, mPinceauTaille)
+        mDrawDessin = CustomPath(couleur, mPinceauTaille)
         mCanvasPaint = Paint(Paint.DITHER_FLAG)
         mPinceauTaille = 20.toFloat()
     }
@@ -43,12 +46,23 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     ///Fonction permettant de créer une ligne
-    override fun draw(canvas: Canvas) {
-        super.draw(canvas)
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
         canvas.drawBitmap(mCanvasBitmap!!, 0f, 0f, mCanvasPaint)
-        if (!mDrawPath!!.isEmpty) {
-            mDrawPaint!!.strokeWidth = mDrawPath!!.epaisseurPinceau
-            canvas.drawPath(mDrawPath!!, mDrawPaint!!)
+
+        ///Permet dessiner un ensemble d'enregistrement de dessins -- La liste customPath est completé d'un dessin à chaque reclachement du bouton
+        for (path in mListeDeDessins)
+        {
+            mDrawPaint!!.strokeWidth = path!!.epaisseurPinceau
+            mDrawPaint!!.color = path!!.couleur
+            canvas.drawPath(path!!, mDrawPaint!!)
+        }
+
+        ///Permet de dessiner puis est enregistrer au relachement du bouton  -- mListeDessins
+        if (!mDrawDessin!!.isEmpty) {
+            mDrawPaint!!.strokeWidth = mDrawDessin!!.epaisseurPinceau
+            mDrawPaint!!.color = mDrawDessin!!.couleur
+            canvas.drawPath(mDrawDessin!!, mDrawPaint!!)
         }
     }
 
@@ -59,14 +73,14 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
-                mDrawPath!!.couleur = couleur
-                mDrawPath!!.epaisseurPinceau = mPinceauTaille
+                mDrawDessin!!.couleur = couleur
+                mDrawDessin!!.epaisseurPinceau = mPinceauTaille
 
-                mDrawPath!!.reset()
+                mDrawDessin!!.reset()
 
                 if (touchX != null) {
                     if (touchY != null) {
-                        mDrawPath!!.moveTo(touchX, touchY)
+                        mDrawDessin!!.moveTo(touchX, touchY)
                     }
                 }
             }
@@ -74,13 +88,15 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
             MotionEvent.ACTION_MOVE -> {
                 if (touchX != null) {
                     if (touchY != null) {
-                        mDrawPath!!.lineTo(touchX, touchY)
+                        mDrawDessin!!.lineTo(touchX, touchY)
                     }
                 }
             }
 
             MotionEvent.ACTION_UP -> {
-                mDrawPath = CustomPath(couleur, mPinceauTaille)
+                ///Permettre l'enregistrement du dessin -- Lorsque le bouton de la souris est relaché
+                mListeDeDessins.add(mDrawDessin!!)
+                mDrawDessin = CustomPath(couleur, mPinceauTaille)
             }
             ///Pour tous les autres évenements je retourne false
             else -> return false
