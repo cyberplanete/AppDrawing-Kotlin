@@ -3,6 +3,7 @@ package net.cyberplanete.drawingkid
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 
@@ -35,7 +36,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
         mDrawDessin = CustomPath(couleur, mPinceauTaille)
         mCanvasPaint = Paint(Paint.DITHER_FLAG)
-        mPinceauTaille = 20.toFloat()
+        /// mPinceauTaille = 20.toFloat()
     }
 
     /// Called during layout when the size of this view has changed
@@ -51,8 +52,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         canvas.drawBitmap(mCanvasBitmap!!, 0f, 0f, mCanvasPaint)
 
         ///Permet dessiner un ensemble d'enregistrement de dessins -- La liste customPath est completé d'un dessin à chaque reclachement du bouton
-        for (path in mListeDeDessins)
-        {
+        for (path in mListeDeDessins) {
             mDrawPaint!!.strokeWidth = path!!.epaisseurPinceau
             mDrawPaint!!.color = path!!.couleur
             canvas.drawPath(path!!, mDrawPaint!!)
@@ -106,6 +106,18 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         // So if something changes and it needs to be reflected on screen, you need to call invalidate()
         invalidate()
         return true
+    }
+
+    ///Configuration de la taile du pinceau -- Taille de l'écran prise en considération
+    fun setTaillePinceau(nouvelleTaille: Float) {
+        //TypedValue prends en consideration la taille de l'écran
+        mPinceauTaille = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            nouvelleTaille,
+            resources.displayMetrics
+        )
+
+        mDrawPaint!!.strokeWidth = mPinceauTaille
     }
 
 
