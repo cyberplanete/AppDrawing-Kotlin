@@ -5,19 +5,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-
-
-    <!--Pour permettre le centrage        -->
-    <net.cyberplanete.drawingkid.DrawingView
-        android:id="@+id/drawing_view"
+    <!-- Plusieurs layer - Le premier pour le background blanc et le second pour l'image et le troisième pour dessin avec un fond gris-->
+    <!--    Fond Blanc-->
+    <FrameLayout
+        android:id="@+id/fl_drawing_view_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="5dp"
         android:background="@drawable/background_drawing_view_layout"
+        android:padding="1dp"
         app:layout_constraintBottom_toTopOf="@id/ll_paint_colors"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+        <!--Fond image - Tour eiffel par défaut -->
+        <ImageView
+            android:id="@+id/iv_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_eiffel"></ImageView>
+        <!--Zone de dessin -->
+        <net.cyberplanete.drawingkid.DrawingView
+            android:id="@+id/drawing_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80FFFFFF" />
+
+    </FrameLayout>
+    <!--Pour permettre le centrage        -->
+
 
     <LinearLayout
         android:id="@+id/ll_paint_colors"
@@ -27,7 +44,7 @@
         app:layout_constraintBottom_toTopOf="@id/ib_brush"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/drawing_view">
+        app:layout_constraintTop_toBottomOf="@id/fl_drawing_view_container">
 
         <!--Voir colors.xml du dossier values  Pour la pallete de couleur-->
         <ImageButton
@@ -43,8 +60,8 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_margin="2dp"
-            android:onClick="paintClicked"
             android:background="@color/skin"
+            android:onClick="paintClicked"
             android:src="@drawable/pallet_normal"
             android:tag="@color/skin" />
 
@@ -61,8 +78,8 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_margin="2dp"
-            android:onClick="paintClicked"
             android:background="@color/red"
+            android:onClick="paintClicked"
             android:src="@drawable/pallet_normal"
             android:tag="@color/red" />
 
@@ -70,8 +87,8 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_margin="2dp"
-            android:onClick="paintClicked"
             android:background="@color/green"
+            android:onClick="paintClicked"
             android:src="@drawable/pallet_normal"
             android:tag="@color/green" />
 
@@ -88,8 +105,8 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_margin="2dp"
-            android:onClick="paintClicked"
             android:background="@color/lollopop"
+            android:onClick="paintClicked"
             android:src="@drawable/pallet_normal"
             android:tag="@color/lollopop" />
 
@@ -98,8 +115,8 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_margin="2dp"
-            android:onClick="paintClicked"
             android:background="@color/random"
+            android:onClick="paintClicked"
             android:src="@drawable/pallet_normal"
             android:tag="@color/random" />
 
@@ -107,8 +124,8 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_margin="2dp"
-            android:onClick="paintClicked"
             android:background="@color/white"
+            android:onClick="paintClicked"
             android:src="@drawable/pallet_normal"
             android:tag="@color/white" />
 
