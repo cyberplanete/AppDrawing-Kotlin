@@ -3,7 +3,9 @@ package net.cyberplanete.drawingkid
 import android.app.Dialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
 import net.cyberplanete.drawingkid.databinding.ActivityMainBinding
@@ -79,6 +81,36 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+    ///Activé depuis activity.xml
+    fun paintClicked(imageButtonSlelectedView: View)
+    {
+        Toast.makeText(this,"Clicked paint",Toast.LENGTH_LONG).show()
+
+        ///La couleur du pinceau et du bouton est changé seulement si il s'agit d'un autre bouton selectionné
+        if(imageButtonSlelectedView !== mImageButtonCurrentPaint)
+        {
+           imageButtonSlelectedView as ImageButton
+            // tag du dossier values fichier color.xml  eg: #FFcc99  <color name="skin">#FFcc99</color>
+            val colorTag = imageButtonSlelectedView.tag.toString()
+            //la couleur du pinceau est configuré par colorTag
+            bindingMainActivity.drawingView.setCouleurPinceau(colorTag)
+
+
+            /// Du dossier drawable pallet_selected
+            /// Apparence pour un bouton séléctionné
+            imageButtonSlelectedView.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.pallet_selected))
+           // imageButton!!.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.pallet_selected))
+        }
+        /// Etait : mImageButtonCurrentPaint!!.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.pallet_selected)) quand séléctionné
+        /// Apparence du bouton en non sélectionné
+        /// Reset par defaut des boutons en non selectionné
+        mImageButtonCurrentPaint!!.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.pallet_normal))
+
+        mImageButtonCurrentPaint = imageButtonSlelectedView as ImageButton
+    }
+
+
 
 
 }

@@ -28,6 +28,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     private fun setupDrawing() {
+        ///The paint class holds the style and color information about how to draw geometries, text and bitmaps
         mDrawPaint = Paint()
         mDrawPaint!!.color = couleur
         mDrawPaint!!.style = Paint.Style.STROKE
@@ -120,6 +121,11 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         mDrawPaint!!.strokeWidth = mPinceauTaille
     }
 
+    /// Configuration de la couleur du pinceau
+    fun setCouleurPinceau(nouvelleCouleur: String) {
+        couleur = Color.parseColor(nouvelleCouleur)
+        mDrawPaint!!.color = couleur
+    }
 
     internal inner class CustomPath(var couleur: Int, var epaisseurPinceau: Float) : Path() {
 
