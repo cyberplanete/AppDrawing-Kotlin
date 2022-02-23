@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_eiffel"></ImageView>
+            android:src="@drawable/ic_eiffel"/>
         <!--Zone de dessin -->
         <net.cyberplanete.drawingkid.DrawingView
             android:id="@+id/drawing_view"
@@ -41,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/ib_brush"
+        app:layout_constraintBottom_toTopOf="@id/ll_brush"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/fl_drawing_view_container">
@@ -132,16 +132,43 @@
     </LinearLayout>
 
 
+<LinearLayout
+    android:id="@+id/ll_brush"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    app:layout_constraintTop_toBottomOf="@id/ll_paint_colors"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+
+    >  <ImageButton
+    android:id="@+id/ib_photo"
+    android:layout_width="50dp"
+    android:layout_height="50dp"
+    android:layout_margin="1dp"
+    android:scaleType="fitXY"
+    android:src="@drawable/ic_photo"
+    />
     <ImageButton
         android:id="@+id/ib_brush"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_margin="5dp"
+        android:layout_margin="1dp"
         android:scaleType="fitXY"
         android:src="@drawable/ic_brush"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_paint_colors" />
+         />
+
+
+
+
+</LinearLayout>
+
+
+
+
+
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
