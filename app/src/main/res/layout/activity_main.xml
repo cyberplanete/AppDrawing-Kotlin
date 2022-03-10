@@ -143,12 +143,12 @@
     app:layout_constraintStart_toStartOf="parent"
 
     >  <ImageButton
-    android:id="@+id/ib_photo"
+    android:id="@+id/ib_Gallery"
     android:layout_width="50dp"
     android:layout_height="50dp"
     android:layout_margin="1dp"
     android:scaleType="fitXY"
-    android:src="@drawable/ic_photo"
+    android:src="@drawable/ic_image"
     />
     <ImageButton
         android:id="@+id/ib_brush"
