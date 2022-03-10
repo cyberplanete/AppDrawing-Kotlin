@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../../layout/custom_preview.xml" value="0.46111111111111114" />
+        <entry key="../../../../layout/custom_preview.xml" value="0.1" />
         <entry key="..\:/MesDocs/Developpement/DrawingKid/app/src/main/res/drawable/background_drawing_view_layout.xml" value="0.34270833333333334" />
         <entry key="..\:/MesDocs/Developpement/DrawingKid/app/src/main/res/drawable/large.xml" value="0.5645833333333333" />
         <entry key="..\:/MesDocs/Developpement/DrawingKid/app/src/main/res/drawable/medium.xml" value="0.5645833333333333" />
@@ -11,6 +13,7 @@
         <entry key="..\:/MesDocs/Developpement/DrawingKid/app/src/main/res/drawable/small.xml" value="0.5645833333333333" />
         <entry key="..\:/MesDocs/Developpement/DrawingKid/app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="..\:/MesDocs/Developpement/DrawingKid/app/src/main/res/layout/dialog_brush_size.xml" value="0.42391304347826086" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.26443768996960487" />
       </map>
     </option>
   </component>
