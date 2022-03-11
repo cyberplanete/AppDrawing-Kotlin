@@ -3,10 +3,13 @@ package net.cyberplanete.drawingkid
 import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,9 +21,24 @@ import net.cyberplanete.drawingkid.databinding.DialogBrushSizeBinding
 
 class MainActivity : AppCompatActivity() {
 
-    // ********* PERMISSIONS ***********
+    // ********* LAUNCHER PICK PHOTO ***********
+    val openGalleryLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+    {
+            //Après validation je change le fond d'ecran par la photo selectionnée
+            result ->
+        if (result.resultCode == RESULT_OK && result.data != null)
+        {
+            val imageBackground: ImageView = bindingMainActivity.ivBackground
+
+            imageBackground.setImageURI(result.data?.data)
+        }
+    }
+
+
+
+    // ********* REQUEST PERMISSIONS ***********
     //Todo 1: Activity result launcher of type Array<String> for permission camera and storage
-    private val cameraAndLocationResultLauncher: ActivityResultLauncher<Array<String>> =
+    private val requestPermissionsForcameraAndLocationResultLauncher: ActivityResultLauncher<Array<String>> =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions())
         { permissions ->
             /**
@@ -51,6 +69,11 @@ class MainActivity : AppCompatActivity() {
                         )
                             .show()
                     }
+                    // 1- l'uri est récupéré dans ma variable pickIntent
+                    val pickIntent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    // 2 - Launcher pour la selection de la photo
+                    openGalleryLauncher.launch(pickIntent)
+
                 } else {
                     if (permissionName == Manifest.permission.ACCESS_FINE_LOCATION) {
                         Toast.makeText(
@@ -70,14 +93,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
             }
-//            if (isGranted) {
-//                Toast.makeText(this, "Permission autorisée pour la caméra", Toast.LENGTH_LONG)
-//                    .show()
-//            } else {
-//                Toast.makeText(this, "Permission non autorisée pour la caméra", Toast.LENGTH_LONG)
-//                    .show();
-//
-//            }
 
         }
 
@@ -123,12 +138,27 @@ class MainActivity : AppCompatActivity() {
         {
             showBrushSizeChooserDialog()
         }
-        // I asked for permission to access external storage
+        // Bouton gallery -- Changer l'image du background
         val ibGallery: ImageButton = bindingMainActivity.ibGallery
-        ibGallery.setOnClickListener { requesCameraAndStoragetPermission() }
+        ibGallery.setOnClickListener()
+        {
+            requesCameraAndStoragetPermission()
+        }
+
+        val ibUndo : ImageButton = bindingMainActivity.ibUndo
+        ibUndo.setOnClickListener()
+        {
+            bindingMainActivity.drawingView.onClickUndo()
+        }
+
+        val ibRedo: ImageButton = bindingMainActivity.ibRedo
+        ibRedo.setOnClickListener()
+        {
+            bindingMainActivity.drawingView.onClickRedo()
+        }
     }
 
-    // Asking for permission to access storage and camera
+    //     Asking for permission to access storage and camera
     private fun requesCameraAndStoragetPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_EXTERNAL_STORAGE) || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
             showRationaleDialog(
@@ -139,7 +169,7 @@ class MainActivity : AppCompatActivity() {
         }else
             {   // I directly ask for the permission.
                 // The registered ActivityResultCallback gets the result of this request.
-                cameraAndLocationResultLauncher.launch(arrayOf(Manifest.permission.CAMERA,Manifest.permission.READ_EXTERNAL_STORAGE))
+                requestPermissionsForcameraAndLocationResultLauncher.launch(arrayOf(Manifest.permission.CAMERA,Manifest.permission.READ_EXTERNAL_STORAGE))
             }
         }
 

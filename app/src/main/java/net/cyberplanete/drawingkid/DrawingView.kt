@@ -21,10 +21,38 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private var canvas: Canvas? = null
 
     ///Permettre l'enregistrement du dessin
-    private val mListeDeDessins = ArrayList<CustomPath>()
+    // Chaque mouvement de la souris formant un trait est enregistré dans un arraylist
+    private val mListeDeTraits = ArrayList<CustomPath>()
+    // Identique a mListdeTraits mais utilisé pour revenir sur l'action précédente
+    private val mRedoListDeTraits = ArrayList<CustomPath>()
+
 
     init {
         setupDrawing()
+    }
+
+    fun onClickUndo ()
+    {
+        //Si liste de traits est superieur à 0
+        if (mListeDeTraits.size > 0)
+        {
+            //Je constitue une liste permettant le retour de la derniere action et en meme temps je retire de ma view la derniere action
+            mRedoListDeTraits.add(mListeDeTraits.removeAt(mListeDeTraits.size - 1))
+            invalidate()
+        }
+    }
+
+    fun onClickRedo ()
+    {
+        //Si liste de traits est superieur à 0
+        if (mRedoListDeTraits.size > 0)
+        {
+            //j'ajoute mListeDeTraits -1 à mmUndoListDeTraits
+           // mUndoListDeTraits.add(mListeDeTraits.removeAt(mListeDeTraits.size - 1))
+            mListeDeTraits.add(mRedoListDeTraits.removeAt(mRedoListDeTraits.size-1))
+
+            invalidate()
+        }
     }
 
     private fun setupDrawing() {
@@ -53,7 +81,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         canvas.drawBitmap(mCanvasBitmap!!, 0f, 0f, mCanvasPaint)
 
         ///Permet dessiner un ensemble d'enregistrement de dessins -- La liste customPath est completé d'un dessin à chaque reclachement du bouton
-        for (path in mListeDeDessins) {
+        for (path in mListeDeTraits) {
             mDrawPaint!!.strokeWidth = path!!.epaisseurPinceau
             mDrawPaint!!.color = path!!.couleur
             canvas.drawPath(path!!, mDrawPaint!!)
@@ -96,7 +124,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
             MotionEvent.ACTION_UP -> {
                 ///Permettre l'enregistrement du dessin -- Lorsque le bouton de la souris est relaché
-                mListeDeDessins.add(mDrawDessin!!)
+                mListeDeTraits.add(mDrawDessin!!)
                 mDrawDessin = CustomPath(couleur, mPinceauTaille)
             }
             ///Pour tous les autres évenements je retourne false
