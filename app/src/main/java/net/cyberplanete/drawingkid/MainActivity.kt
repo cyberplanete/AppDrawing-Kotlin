@@ -4,6 +4,9 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -22,18 +25,17 @@ import net.cyberplanete.drawingkid.databinding.DialogBrushSizeBinding
 class MainActivity : AppCompatActivity() {
 
     // ********* LAUNCHER PICK PHOTO ***********
-    val openGalleryLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
-    {
-            //Après validation je change le fond d'ecran par la photo selectionnée
-            result ->
-        if (result.resultCode == RESULT_OK && result.data != null)
+    val openGalleryLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult())
         {
-            val imageBackground: ImageView = bindingMainActivity.ivBackground
+            //Après validation je change le fond d'ecran par la photo selectionnée
+                result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val imageBackground: ImageView = bindingMainActivity.ivBackground
 
-            imageBackground.setImageURI(result.data?.data)
+                imageBackground.setImageURI(result.data?.data)
+            }
         }
-    }
-
 
 
     // ********* REQUEST PERMISSIONS ***********
@@ -70,7 +72,8 @@ class MainActivity : AppCompatActivity() {
                             .show()
                     }
                     // 1- l'uri est récupéré dans ma variable pickIntent
-                    val pickIntent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    val pickIntent =
+                        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                     // 2 - Launcher pour la selection de la photo
                     openGalleryLauncher.launch(pickIntent)
 
@@ -145,7 +148,7 @@ class MainActivity : AppCompatActivity() {
             requesCameraAndStoragetPermission()
         }
 
-        val ibUndo : ImageButton = bindingMainActivity.ibUndo
+        val ibUndo: ImageButton = bindingMainActivity.ibUndo
         ibUndo.setOnClickListener()
         {
             bindingMainActivity.drawingView.onClickUndo()
@@ -160,19 +163,29 @@ class MainActivity : AppCompatActivity() {
 
     //     Asking for permission to access storage and camera
     private fun requesCameraAndStoragetPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_EXTERNAL_STORAGE) || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) || ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.CAMERA
+            )
+        ) {
             showRationaleDialog(
                 "Kids Drawing App",
                 "Kids Drawing App" + "Needs to access your external storage and camera",
 
                 )
-        }else
-            {   // I directly ask for the permission.
-                // The registered ActivityResultCallback gets the result of this request.
-                requestPermissionsForcameraAndLocationResultLauncher.launch(arrayOf(Manifest.permission.CAMERA,Manifest.permission.READ_EXTERNAL_STORAGE))
-            }
+        } else {   // I directly ask for the permission.
+            // The registered ActivityResultCallback gets the result of this request.
+            requestPermissionsForcameraAndLocationResultLauncher.launch(
+                arrayOf(
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                )
+            )
         }
-
+    }
 
 
     private fun showBrushSizeChooserDialog() {
@@ -226,9 +239,12 @@ class MainActivity : AppCompatActivity() {
             )
             // imageButton!!.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.pallet_selected))
         }
-        /// Etait : mImageButtonCurrentPaint!!.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.pallet_selected)) quand séléctionné
-        /// Apparence du bouton en non sélectionné
-        /// Reset par defaut des boutons en non selectionné
+        /**
+         * Etait : mImageButtonCurrentPaint!!.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.pallet_selected)) quand séléctionné
+         * Apparence du bouton en non sélectionné
+         * Reset par defaut des boutons en non selectionné
+         */
+
         mImageButtonCurrentPaint!!.setImageDrawable(
             ContextCompat.getDrawable(
                 this,
@@ -239,6 +255,27 @@ class MainActivity : AppCompatActivity() {
         mImageButtonCurrentPaint = imageButtonSlelectedView as ImageButton
     }
 
+    /**
+     * Utiliser pour sauvegarder le desssin réalisé
+     */
+    private fun getBitmapFromView(dessin_view: View): Bitmap {
+        /**
+         * Ici le dessin est mémorisé dans ma variable Bitmap
+         */
+        val returnedBitmap =
+            Bitmap.createBitmap(dessin_view.width, dessin_view.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(returnedBitmap)
+        val imageViewBackground = dessin_view.background
+        if (imageViewBackground != null) {
+            imageViewBackground.draw(canvas)
+        }else
+        {
+            canvas.drawColor(Color.WHITE)
+        }
+        dessin_view.draw(canvas)
+
+        return returnedBitmap
+    }
 
     /**
      * Shows rationale dialog for displaying why the app needs permission
