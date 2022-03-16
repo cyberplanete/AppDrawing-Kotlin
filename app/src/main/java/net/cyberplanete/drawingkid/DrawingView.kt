@@ -23,6 +23,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     ///Permettre l'enregistrement du dessin
     // Chaque mouvement de la souris formant un trait est enregistré dans un arraylist
     private val mListeDeTraits = ArrayList<CustomPath>()
+
     // Identique a mListdeTraits mais utilisé pour revenir sur l'action précédente
     private val mRedoListDeTraits = ArrayList<CustomPath>()
 
@@ -31,29 +32,27 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         setupDrawing()
     }
 
-    fun onClickUndo ()
-    {
+    fun onClickUndo() {
         //Si liste de traits est superieur à 0
-        if (mListeDeTraits.size > 0)
-        {
+        if (mListeDeTraits.size > 0) {
             //Je constitue une liste permettant le retour de la derniere action et en meme temps je retire de ma view la derniere action
             mRedoListDeTraits.add(mListeDeTraits.removeAt(mListeDeTraits.size - 1))
             invalidate()
         }
     }
 
-    fun onClickRedo ()
-    {
+    fun onClickRedo() {
         //Si liste de traits est superieur à 0
-        if (mRedoListDeTraits.size > 0)
-        {
+        if (mRedoListDeTraits.size > 0) {
             //j'ajoute mListeDeTraits -1 à mmUndoListDeTraits
-           // mUndoListDeTraits.add(mListeDeTraits.removeAt(mListeDeTraits.size - 1))
-            mListeDeTraits.add(mRedoListDeTraits.removeAt(mRedoListDeTraits.size-1))
+            // mUndoListDeTraits.add(mListeDeTraits.removeAt(mListeDeTraits.size - 1))
+            mListeDeTraits.add(mRedoListDeTraits.removeAt(mRedoListDeTraits.size - 1))
 
             invalidate()
         }
     }
+
+
 
     private fun setupDrawing() {
         ///The paint class holds the style and color information about how to draw geometries, text and bitmaps
@@ -158,5 +157,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     internal inner class CustomPath(var couleur: Int, var epaisseurPinceau: Float) : Path() {
 
     }
+
+
 
 }

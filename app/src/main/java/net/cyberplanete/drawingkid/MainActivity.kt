@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
@@ -19,85 +21,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.cyberplanete.drawingkid.databinding.ActivityMainBinding
 import net.cyberplanete.drawingkid.databinding.DialogBrushSizeBinding
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
-
-    // ********* LAUNCHER PICK PHOTO ***********
-    val openGalleryLauncher: ActivityResultLauncher<Intent> =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult())
-        {
-            //Après validation je change le fond d'ecran par la photo selectionnée
-                result ->
-            if (result.resultCode == RESULT_OK && result.data != null) {
-                val imageBackground: ImageView = bindingMainActivity.ivBackground
-
-                imageBackground.setImageURI(result.data?.data)
-            }
-        }
-
-
-    // ********* REQUEST PERMISSIONS ***********
-    //Todo 1: Activity result launcher of type Array<String> for permission camera and storage
-    private val requestPermissionsForcameraAndLocationResultLauncher: ActivityResultLauncher<Array<String>> =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions())
-        { permissions ->
-            /**
-            Here it returns a Map of permission name as key with boolean as value
-            Todo 2: We loop through the map to get the value we need which is the boolean
-            value
-             */
-            permissions.entries.forEach {
-
-                //Todo 3: if it is granted then we show its granted
-                val permissionName = it.key
-                val isGranted = it.value
-                if (isGranted) {
-                    //check the permission name and perform the specific operation
-                    if (permissionName == Manifest.permission.ACCESS_FINE_LOCATION) {
-                        Toast.makeText(
-                            this,
-                            "Permission granted for location",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                    } else {
-                        //check the permission name and perform the specific operation
-                        Toast.makeText(
-                            this,
-                            "Permission granted for Camera",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                    }
-                    // 1- l'uri est récupéré dans ma variable pickIntent
-                    val pickIntent =
-                        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                    // 2 - Launcher pour la selection de la photo
-                    openGalleryLauncher.launch(pickIntent)
-
-                } else {
-                    if (permissionName == Manifest.permission.ACCESS_FINE_LOCATION) {
-                        Toast.makeText(
-                            this,
-                            "Permission denied for location",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                    } else {
-                        Toast.makeText(
-                            this,
-                            "Permission denied for Camera",
-                            Toast.LENGTH_LONG
-                        )
-                            .show()
-                    }
-                }
-
-            }
-
-        }
 
     //private var drawingView : DrawingView? = null
     private lateinit var bindingDialogBrushSize: DialogBrushSizeBinding
@@ -107,6 +42,40 @@ class MainActivity : AppCompatActivity() {
     // 1 - Accès à la palette de couleur
     private var mImageButtonCurrentPaint: ImageButton? = null
 
+    /**
+     * ********* REQUEST PERMISSIONS ***********
+     */
+    val requestPermission: ActivityResultLauncher<Array<String>> =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            permissions.entries.forEach {
+                val perMissionName = it.key
+                val isGranted = it.value
+                //if permission is granted show a toast and perform operation
+                if (isGranted ) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Permission granted now you can read the storage files.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    val pickIntent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    openGalleryLauncher.launch(pickIntent)
+                } else {
+                    //Displaying another toast if permission is not granted and this time focus on
+                    //    Read external storage
+                    if (perMissionName == Manifest.permission.READ_EXTERNAL_STORAGE)
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Oops you just denied the permission.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                }
+            }
+
+        }
+
+    /**
+     *  ON CREATE
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bindingMainActivity = ActivityMainBinding.inflate(layoutInflater)
@@ -159,7 +128,40 @@ class MainActivity : AppCompatActivity() {
         {
             bindingMainActivity.drawingView.onClickRedo()
         }
+
+        val ibSave: ImageButton = bindingMainActivity.ibSave
+        ibSave.setOnClickListener()
+        {
+            if (isReadStorageAllowed())
+            {
+                lifecycleScope.launch()
+                {
+                    val frameLayoutViewImported: FrameLayout = findViewById(R.id.fl_drawing_view_container)
+                    val myBitmap: Bitmap = getBitmapFromView(frameLayoutViewImported)
+                    sauvegardeImageBitmap(myBitmap)
+
+                }
+            }
+
+        }
     }
+
+
+    /**
+     * ********* LAUNCHER PICK PHOTO ***********
+      */
+    val openGalleryLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+        {
+            //Après validation je change le fond d'ecran par la photo selectionnée
+                result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val imageBackground: ImageView = bindingMainActivity.ivBackground
+
+                imageBackground.setImageURI(result.data?.data)
+            }
+        }
+
 
     //     Asking for permission to access storage and camera
     private fun requesCameraAndStoragetPermission() {
@@ -178,7 +180,7 @@ class MainActivity : AppCompatActivity() {
                 )
         } else {   // I directly ask for the permission.
             // The registered ActivityResultCallback gets the result of this request.
-            requestPermissionsForcameraAndLocationResultLauncher.launch(
+            requestPermission.launch(
                 arrayOf(
                     Manifest.permission.CAMERA,
                     Manifest.permission.READ_EXTERNAL_STORAGE
@@ -256,7 +258,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Utiliser pour sauvegarder le desssin réalisé
+     * 1. Creation du bitmap memorisé dans une variable pour ensuite être sauvegarder localement.
      */
     private fun getBitmapFromView(dessin_view: View): Bitmap {
         /**
@@ -276,6 +278,61 @@ class MainActivity : AppCompatActivity() {
 
         return returnedBitmap
     }
+    /**
+     * 2.
+     */
+    private suspend fun sauvegardeImageBitmap(fichierBitmap: Bitmap) : String {
+        var result = ""
+        /**
+         * J'ai ajouter dans build.gradle implementation 'androidx.activity:activity-ktx:1.4.0' pour permettre le fonctionnement
+         * Coroutines
+         */
+        withContext(Dispatchers.IO)
+        {
+            if (fichierBitmap != null) {
+                try {
+                    val byteArrayOutputStream = ByteArrayOutputStream()
+                    /**
+                     * modification du bitmap en png
+                     */
+                    fichierBitmap.compress(Bitmap.CompressFormat.PNG, 90, byteArrayOutputStream)
+
+                    val filePath =
+                        File(externalCacheDir?.absoluteFile.toString() + File.separator + "KidDrawing_" + System.currentTimeMillis() / 1000 + ".png")
+                    val fileOutputStream = FileOutputStream(filePath)
+                    fileOutputStream.write(byteArrayOutputStream.toByteArray())
+                    fileOutputStream.close()
+
+                    result = filePath.absolutePath
+
+                    runOnUiThread()
+                    {
+                        if (result.isNotEmpty()) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Fichier sauvegarder correctement: $result",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Erreur lors de la sauvegarde: $result",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    result = ""
+                    e.printStackTrace()
+                }
+            }
+        }
+        return result
+    }
+
+
+
+
 
     /**
      * Shows rationale dialog for displaying why the app needs permission
@@ -289,6 +346,16 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
         builder.create().show()
+    }
+
+    /**
+     * Check if read permissions
+     */
+    private fun isReadStorageAllowed(): Boolean {
+        val result =
+            ContextCompat.checkSelfPermission(this , Manifest.permission.READ_EXTERNAL_STORAGE)
+        return result == PackageManager.PERMISSION_GRANTED
+
     }
 
 }
