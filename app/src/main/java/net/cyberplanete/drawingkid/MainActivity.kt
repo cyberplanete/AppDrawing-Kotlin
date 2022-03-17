@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bindingDialogBrushSize: DialogBrushSizeBinding
     private lateinit var bindingMainActivity: ActivityMainBinding
     private lateinit var brushDialog: Dialog
+    var customProgressDialog: Dialog? = null
 
     // 1 - Accès à la palette de couleur
     private var mImageButtonCurrentPaint: ImageButton? = null
@@ -51,13 +52,14 @@ class MainActivity : AppCompatActivity() {
                 val perMissionName = it.key
                 val isGranted = it.value
                 //if permission is granted show a toast and perform operation
-                if (isGranted ) {
+                if (isGranted) {
                     Toast.makeText(
                         this@MainActivity,
                         "Permission granted now you can read the storage files.",
                         Toast.LENGTH_LONG
                     ).show()
-                    val pickIntent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    val pickIntent =
+                        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                     openGalleryLauncher.launch(pickIntent)
                 } else {
                     //Displaying another toast if permission is not granted and this time focus on
@@ -132,11 +134,12 @@ class MainActivity : AppCompatActivity() {
         val ibSave: ImageButton = bindingMainActivity.ibSave
         ibSave.setOnClickListener()
         {
-            if (isReadStorageAllowed())
-            {
+            if (isReadStorageAllowed()) {
+                showProgressDialog()
                 lifecycleScope.launch()
                 {
-                    val frameLayoutViewImported: FrameLayout = findViewById(R.id.fl_drawing_view_container)
+                    val frameLayoutViewImported: FrameLayout =
+                        findViewById(R.id.fl_drawing_view_container)
                     val myBitmap: Bitmap = getBitmapFromView(frameLayoutViewImported)
                     sauvegardeImageBitmap(myBitmap)
 
@@ -149,7 +152,8 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * ********* LAUNCHER PICK PHOTO ***********
-      */
+     * Method is used to launch the dialog to select different brush sizes.
+     */
     val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult())
         {
@@ -163,7 +167,10 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-    //     Asking for permission to access storage and camera
+    /**
+     * Asking for permission to access storage and camera
+     */
+
     private fun requesCameraAndStoragetPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(
                 this,
@@ -270,18 +277,18 @@ class MainActivity : AppCompatActivity() {
         val imageViewBackground = dessin_view.background
         if (imageViewBackground != null) {
             imageViewBackground.draw(canvas)
-        }else
-        {
+        } else {
             canvas.drawColor(Color.WHITE)
         }
         dessin_view.draw(canvas)
 
         return returnedBitmap
     }
+
     /**
      * 2.
      */
-    private suspend fun sauvegardeImageBitmap(fichierBitmap: Bitmap) : String {
+    private suspend fun sauvegardeImageBitmap(fichierBitmap: Bitmap): String {
         var result = ""
         /**
          * J'ai ajouter dans build.gradle implementation 'androidx.activity:activity-ktx:1.4.0' pour permettre le fonctionnement
@@ -296,18 +303,41 @@ class MainActivity : AppCompatActivity() {
                      * modification du bitmap en png
                      */
                     fichierBitmap.compress(Bitmap.CompressFormat.PNG, 90, byteArrayOutputStream)
-
+                    /**
+                     * Write a compressed version of the bitmap to the specified outputstream.
+                     * If this returns true, the bitmap can be reconstructed by passing a
+                     * corresponding inputstream to BitmapFactory.decodeStream(). Note: not
+                     * all Formats support all bitmap configs directly, so it is possible that
+                     * the returned bitmap from BitmapFactory could be in a different bitdepth,
+                     * and/or may have lost per-pixel alpha (e.g. JPEG only supports opaque
+                     * pixels).
+                     *
+                     * @param format   The format of the compressed image
+                     * @param quality  Hint to the compressor, 0-100. 0 meaning compress for
+                     *                 small size, 100 meaning compress for max quality. Some
+                     *                 formats, like PNG which is lossless, will ignore the
+                     *                 quality setting
+                     * @param stream   The outputstream to write the compressed data.
+                     * @return true if successfully compressed to the specified stream.
+                     */
                     val filePath =
                         File(externalCacheDir?.absoluteFile.toString() + File.separator + "KidDrawing_" + System.currentTimeMillis() / 1000 + ".png")
-                    val fileOutputStream = FileOutputStream(filePath)
+
+                    // Here the Environment : Provides access to environment variables.
+                    // getExternalStorageDirectory : returns the primary shared/external storage directory.
+                    // absoluteFile : Returns the absolute form of this abstract pathname.
+                    // File.separator : The system-dependent default name-separator character. This string contains a single character.
+                    val fileOutputStream =
+                        FileOutputStream(filePath)// Creates a file output stream to write to the file represented by the specified object.
                     fileOutputStream.write(byteArrayOutputStream.toByteArray())
-                    fileOutputStream.close()
+                    fileOutputStream.close()// Closes this file output stream and releases any system resources associated with this stream. This file output stream may no longer be used for writing bytes.
 
                     result = filePath.absolutePath
 
                     runOnUiThread()
                     {
                         if (result.isNotEmpty()) {
+                            cancelProgressDialog()
                             Toast.makeText(
                                 this@MainActivity,
                                 "Fichier sauvegarder correctement: $result",
@@ -331,9 +361,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-
-
     /**
      * Shows rationale dialog for displaying why the app needs permission
      * Only shown if the user has denied the permission request previously
@@ -349,11 +376,54 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     *
+     * Method is used to show the custom Progress Dialog
+     *
+     */
+    private fun showProgressDialog() {
+        customProgressDialog = Dialog(this)
+        /*
+        Set the screen content from a layout ressource.
+        The ressource will be inflated, adding all the top-level views to the screen.
+         */
+        customProgressDialog?.setContentView(R.layout.dialog_custom_progress)
+        /*
+        Start the dialog and display it on screen
+         */
+        customProgressDialog?.show()
+    }
+
+    /**
+     * This function is used to dismiss the progress dialog if it is visible to user.
+     */
+    private fun cancelProgressDialog() {
+        if (customProgressDialog != null) {
+            customProgressDialog?.dismiss()
+            customProgressDialog = null
+        }
+    }
+
+    /**
      * Check if read permissions
      */
     private fun isReadStorageAllowed(): Boolean {
+        //Getting the permission status
+        // Here the checkSelfPermission is
+        /**
+         * Determine whether <em>you</em> have been granted a particular permission.
+         *
+         * @param permission The name of the permission being checked.
+         *
+         */
         val result =
-            ContextCompat.checkSelfPermission(this , Manifest.permission.READ_EXTERNAL_STORAGE)
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+        /**
+         *
+         * @return {@link android.content.pm.PackageManager#PERMISSION_GRANTED} if you have the
+         * permission, or {@link android.content.pm.PackageManager#PERMISSION_DENIED} if not.
+         *
+         */
+        //If permission is granted returning true and If permission is not granted returning false
         return result == PackageManager.PERMISSION_GRANTED
 
     }
