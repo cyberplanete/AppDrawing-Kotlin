@@ -5,7 +5,7 @@ Une application simple pour dessiner sur un mobile Android
 
 ## Screenshots
 
-<img src="https://github.com/cyberplanete/AppDrawing-Kotlin/tree/master/app/src/main/java/screenshots/screenshot.png"  />
+<img src="https://github.com/cyberplanete/AppDrawing-Kotlin/blob/master/app/src/main/java/screenshots/screenshot.png"  />
 <img src="https://github.com/cyberplanete/AppDrawing-Kotlin/tree/master/app/src/main/java/screenshots/screenshot1.png"  />
 <img src="https://github.com/cyberplanete/AppDrawing-Kotlin/tree/master/app/src/main/java/screenshots/screenshot2.png"  />
 
