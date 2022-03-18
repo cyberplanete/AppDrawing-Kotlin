@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.media.MediaScannerConnection
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -116,7 +117,7 @@ class MainActivity : AppCompatActivity() {
         val ibGallery: ImageButton = bindingMainActivity.ibGallery
         ibGallery.setOnClickListener()
         {
-            requesCameraAndStoragetPermission()
+            requestStoragePermission()
         }
 
         val ibUndo: ImageButton = bindingMainActivity.ibUndo
@@ -167,34 +168,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-    /**
-     * Asking for permission to access storage and camera
-     */
 
-    private fun requesCameraAndStoragetPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(
-                this,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) || ActivityCompat.shouldShowRequestPermissionRationale(
-                this,
-                Manifest.permission.CAMERA
-            )
-        ) {
-            showRationaleDialog(
-                "Kids Drawing App",
-                "Kids Drawing App" + "Needs to access your external storage and camera",
-
-                )
-        } else {   // I directly ask for the permission.
-            // The registered ActivityResultCallback gets the result of this request.
-            requestPermission.launch(
-                arrayOf(
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                )
-            )
-        }
-    }
 
 
     private fun showBrushSizeChooserDialog() {
@@ -335,14 +309,15 @@ class MainActivity : AppCompatActivity() {
                     result = filePath.absolutePath
 
                     runOnUiThread()
-                    {
+                    {cancelProgressDialog()
                         if (result.isNotEmpty()) {
-                            cancelProgressDialog()
+
                             Toast.makeText(
                                 this@MainActivity,
                                 "Fichier sauvegarder correctement: $result",
                                 Toast.LENGTH_SHORT
                             ).show()
+                            shareImage(result)
                         } else {
                             Toast.makeText(
                                 this@MainActivity,
@@ -403,6 +378,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //create a method to requestStorage permission
+    private fun requestStoragePermission(){
+        // Check if the permission was denied and show rationale
+        if (
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+        ){
+            //call the rationale dialog to tell the user why they need to allow permission request
+            showRationaleDialog("Kids Drawing App","Kids Drawing App " +
+                    "needs to Access Your External Storage")
+        }
+        else {
+            // You can directly ask for the permission.
+            //if it has not been denied then request for permission
+            //  The registered ActivityResultCallback gets the result of this request.
+            requestPermission.launch(
+                arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            )
+        }
+
+    }
+
+
+
     /**
      * Check if read permissions
      */
@@ -426,6 +429,21 @@ class MainActivity : AppCompatActivity() {
         //If permission is granted returning true and If permission is not granted returning false
         return result == PackageManager.PERMISSION_GRANTED
 
+    }
+/**
+ * Method used to enable sharing of this file
+ */
+    private fun shareImage (result: String)
+    {
+        MediaScannerConnection.scanFile(this, arrayOf(result),null)
+        {
+          path,uri ->
+            val shareIntent =  Intent()
+            shareIntent.action = Intent.ACTION_SEND
+            shareIntent.putExtra(Intent.EXTRA_STREAM,uri)
+            shareIntent.type = "image/png"
+            startActivity(Intent.createChooser(shareIntent,"share"))
+        }
     }
 
 }
